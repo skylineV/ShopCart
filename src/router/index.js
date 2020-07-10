@@ -1,19 +1,16 @@
 import Vue from 'vue'
-import Router from 'vue-router'
-import index from '@/views/index'
-import shopcart from '@/views/shopcart'
-Vue.use(Router)
+import VueRouter from 'vue-router'
 
-export default new Router({
-  routes: [{
-      path: '/',
-      name: 'index',
-      component: index
-    },
-    {
-      path: '/shopcart',
-      name: 'shopcart',
-      component: shopcart
-    }
-  ]
+Vue.use(VueRouter)
+
+const routes = [{
+  path: '/',
+  name: 'index',
+  component: () => import('../views/index.vue')
+}]
+
+const router = new VueRouter({
+  routes
 })
+
+export default router

@@ -3,31 +3,19 @@
     <div class="block">
       <div class="shop" v-for="(item,index) in orderData" :key="index">
         <div class="line">
-          <div class="pic" @click="getshop(index)">
+          <div class="pic" @click="selectShop(index)">
             <img
-              v-if="item.select_shop == 1"
-              src="https://sucai.suoluomei.cn/sucai_zs/images/20191121093322-1.png"
-              alt="店铺选中"
-            />
-            <img
-              v-if="item.select_shop == 0"
-              src="https://sucai.suoluomei.cn/sucai_zs/images/20191121093322-2.png"
-              alt="店铺未选择"
+              :src="item.isShop == 1 ? 'https://sucai.suoluomei.cn/sucai_zs/images/20191121093322-1.png':'https://sucai.suoluomei.cn/sucai_zs/images/20191121093322-2.png'"
+              alt
             />
           </div>
           <div>{{item.shopName}}</div>
         </div>
-        <div class="row" v-for="(row,i) in item.cartlist" :key="i">
-          <div class="pic" @click="getgoods(index,i)">
+        <div class="row" v-for="(row,i) in item.goodsList" :key="i">
+          <div class="pic" @click="selectGoods(index,i)">
             <img
-              v-if="row.select_goods == 1"
-              src="http://sucai.suoluomei.cn/sucai_zs/images/20191121093322-1.png"
-              alt="商品选中"
-            />
-            <img
-              v-if="row.select_goods == 0"
-              src="https://sucai.suoluomei.cn/sucai_zs/images/20191121093322-2.png"
-              alt="商品未选择"
+              :src="row.isGoods == 1 ? 'http://sucai.suoluomei.cn/sucai_zs/images/20191121093322-1.png' :'https://sucai.suoluomei.cn/sucai_zs/images/20191121093322-2.png'"
+              alt
             />
           </div>
           <div class="detail">
@@ -39,8 +27,8 @@
               <div class="norm">{{row.format}}</div>
               <div class="rol">
                 <span class="amount">￥{{row.price}}</span>
-                <van-stepper v-model="row.count" async-change @change="getgoods_num(row,i)" />
-                <div class="del" @click="getdel(index,i)">
+                <van-stepper v-model="row.count" disable-input @change="countNum()" />
+                <div class="del" @click="delGoods(index,i)">
                   <img src="https://sucai.suoluomei.cn/sucai_zs/images/20191121100950-3.png" alt />
                 </div>
               </div>
@@ -49,18 +37,21 @@
         </div>
       </div>
       <div class="close">
-        <div class="all" @click="getall()">
+        <div class="all" @click="selectAll()">
           <div class="pic">
-            <img :src="select_all" alt />
+            <img
+              :src="isAll == 1 ? 'https://sucai.suoluomei.cn/sucai_zs/images/20191121093322-1.png' : 'https://sucai.suoluomei.cn/sucai_zs/images/20191121093322-2.png'"
+              alt
+            />
           </div>
           <span>全选</span>
         </div>
         <div class="refer">
           <div class="total">
             <span>合计:</span>
-            <span>￥{{sum}}</span>
+            <span>￥{{allPrice}}</span>
           </div>
-          <div class="settlement" @click="getbill()">结算</div>
+          <div class="settlement">结算</div>
         </div>
       </div>
     </div>
@@ -71,20 +62,19 @@
 export default {
   data() {
     return {
-      select_all:
-        "https://sucai.suoluomei.cn/sucai_zs/images/20191121093322-2.png",
-      sum: 0,
+      isAll: 0,
+      allPrice: 0,
       orderData: [
         {
           shopId: 1,
           shopName: "京东自营",
-          select_shop: 0,
-          cartlist: [
+          isShop: 0,
+          goodsList: [
             {
               id: 1,
               shopId: 1,
               shopName: "京东自营",
-              select_goods: 0,
+              isGoods: 0,
               defaultPic:
                 "https://img30.360buyimg.com/popWareDetail/jfs/t3208/194/7616404169/244198/369625db/58b7d093N03520fb7.jpg",
               productId: 1,
@@ -97,7 +87,7 @@ export default {
               id: 2,
               shopId: 1,
               shopName: "京东自营",
-              select_goods: 0,
+              isGoods: 0,
               defaultPic:
                 "https://img14.360buyimg.com/n0/jfs/t2971/15/167732091/93002/204c1016/574d9d9aNe4e6fa7a.jpg",
               productId: 2,
@@ -111,13 +101,13 @@ export default {
         {
           shopId: 2,
           shopName: "海澜之家",
-          select_shop: 0,
-          cartlist: [
+          isShop: 0,
+          goodsList: [
             {
               id: 1,
               shopId: 2,
               shopName: "海澜之家",
-              select_goods: 0,
+              isGoods: 0,
               defaultPic:
                 "https://img30.360buyimg.com/popWaterMark/jfs/t4075/83/1343091204/132469/9034cb9c/5873496bN68020ba8.jpg",
               productId: 1,
@@ -131,13 +121,13 @@ export default {
         {
           shopId: 3,
           shopName: "OPPO官方旗舰店",
-          select_shop: 0,
-          cartlist: [
+          isShop: 0,
+          goodsList: [
             {
               id: 1,
               shopId: 3,
               shopName: "OPPO官方旗舰店",
-              select_goods: 0,
+              isGoods: 0,
               defaultPic:
                 "https://img10.360buyimg.com/cms/jfs/t6064/272/2163314583/157700/442d6477/593c1c49N7c63a7d9.jpg",
               productId: 1,
@@ -150,7 +140,7 @@ export default {
               id: 2,
               shopId: 3,
               shopName: "OPPO官方旗舰店",
-              select_goods: 0,
+              isGoods: 0,
               defaultPic:
                 "https://img14.360buyimg.com/n0/jfs/t3142/194/4953241722/254855/1651c2b1/585b9021Nf653e48a.jpg",
               productId: 1,
@@ -167,129 +157,122 @@ export default {
 
   mounted() {},
   methods: {
-    //删除商品
-    getdel(index, i) {
-      this.orderData[index].cartlist.splice(i, 1);
-      if (this.orderData[index].cartlist.length == 0) {
+    // 删除商品
+    delGoods(index, i) {
+      var list = this.orderData[index].goodsList;
+      list.splice(i, 1);
+      if (list.length == 0) {
         this.orderData.splice(index, 1);
       }
-      this.getprice();
-      this.getwatchall();
+      this.watchAll();
+      this.countPrice();
     },
-    //选择商品
-    getgoods(index, i) {
-      var goods_status = this.orderData[index].cartlist[i].select_goods;
-      if (goods_status == 0) {
-        this.orderData[index].cartlist[i].select_goods = 1;
+
+    // 选择商品
+    selectGoods(index, i) {
+      var list = this.orderData[index].goodsList;
+      if (list[i].isGoods == 0) {
+        list[i].isGoods = 1;
       } else {
-        this.orderData[index].cartlist[i].select_goods = 0;
+        list[i].isGoods = 0;
       }
-      //选择完商品对店铺进行回选
-      var select_item = 0;
-      for (let i in this.orderData[index].cartlist) {
-        if (this.orderData[index].cartlist[i].select_goods == 1) {
-          select_item = select_item + 1;
-        }
-      }
-      if (select_item < this.orderData[index].cartlist.length) {
-        this.orderData[index].select_shop = 0;
+      var anti = list.map(item => item.isGoods).indexOf(0);
+      if (anti == -1) {
+        this.orderData[index].isShop = 1;
       } else {
-        this.orderData[index].select_shop = 1;
+        this.orderData[index].isShop = 0;
       }
-      this.getprice();
-      this.getwatchall();
+      this.watchAll();
+      this.countPrice();
     },
-    //店铺全选
-    getshop(index) {
-      var shop_status = this.orderData[index].select_shop;
-      if (shop_status == 0) {
-        this.orderData[index].select_shop = 1;
-        for (let i in this.orderData[index].cartlist) {
-          this.orderData[index].cartlist[i].select_goods = 1;
+
+    // 选择店铺
+    selectShop(index) {
+      var list = this.orderData;
+      var goodsList = list[index].goodsList;
+      if (list[index].isShop == 0) {
+        list[index].isShop = 1;
+        for (let i in goodsList) {
+          goodsList[i].isGoods = 1;
         }
       } else {
-        this.orderData[index].select_shop = 0;
-        for (let i in this.orderData[index].cartlist) {
-          this.orderData[index].cartlist[i].select_goods = 0;
+        list[index].isShop = 0;
+        for (let i in goodsList) {
+          goodsList[i].isGoods = 0;
         }
       }
-      this.getprice();
-      this.getwatchall();
+      this.watchAll();
+      this.countPrice();
     },
-    // 看页面的选择状态，如果全部点击为选择则全选
-    getwatchall() {
-      for (let i in this.orderData) {
-        if (this.orderData[i].select_shop == 0) {
-          this.select_all =
-            "https://sucai.suoluomei.cn/sucai_zs/images/20191121093322-2.png";
-          break;
-        }
-        if (this.orderData[i].select_shop == 1) {
-          this.select_all =
-            "https://sucai.suoluomei.cn/sucai_zs/images/20191121093322-1.png";
-        }
+
+    // 全选
+    selectAll() {
+      var list = this.orderData;
+      if (list.length == 0) {
+        this.isAll = 0;
+        return;
       }
-      if (this.orderData.length == 0) {
-        this.select_all =
-          "https://sucai.suoluomei.cn/sucai_zs/images/20191121093322-2.png";
-      }
-    },
-    //全选
-    getall() {
-      if (
-        this.select_all ==
-        "https://sucai.suoluomei.cn/sucai_zs/images/20191121093322-1.png"
-      ) {
-        for (let i in this.orderData) {
-          this.orderData[i].select_shop = 1;
-          this.getshop(i);
+      if (this.isAll == 0) {
+        this.isAll = 1;
+        for (let i in list) {
+          list[i].isShop = 0;
+          this.selectShop(i);
         }
-        this.select_all =
-          "https://sucai.suoluomei.cn/sucai_zs/images/20191121093322-2.png";
       } else {
-        for (let i in this.orderData) {
-          this.orderData[i].select_shop = 0;
-          this.getshop(i);
+        this.isAll = 0;
+        for (let i in list) {
+          list[i].isShop = 1;
+          this.selectShop(i);
         }
-        this.select_all =
-          "https://sucai.suoluomei.cn/sucai_zs/images/20191121093322-1.png";
+      }
+      this.countPrice();
+    },
+
+    // 监听全选
+    watchAll() {
+      var list = this.orderData;
+      if (list.length == 0) {
+        this.isAll = 0;
+        return;
+      }
+      var result = [];
+      for (let i in list) {
+        for (let j in list[i].goodsList) {
+          result.push(list[i].goodsList[j].isGoods);
+        }
+      }
+      var anti = result.map(item => item).indexOf(0);
+      if (anti == -1) {
+        this.isAll = 1;
+      } else {
+        this.isAll = 0;
       }
     },
-    // 变更商品数量
-    getgoods_num() {
-      this.getprice();
+
+    // 更改商品数量
+    countNum() {
+      this.countPrice();
     },
-    //总价钱
-    getprice() {
-      let allPrice = 0;
-      for (let i in this.orderData) {
-        for (let j in this.orderData[i].cartlist) {
-          if (this.orderData[i].cartlist[j].select_goods == 1) {
-            allPrice +=
-              this.orderData[i].cartlist[j].price *
-              this.orderData[i].cartlist[j].count;
+
+    // 计算总价格
+    countPrice() {
+      let count = 0;
+      var list = this.orderData;
+      for (let i in list) {
+        for (let j in list[i].goodsList) {
+          if (list[i].goodsList[j].isGoods == 1) {
+            count += list[i].goodsList[j].price * list[i].goodsList[j].count;
           }
         }
       }
-      this.sum = allPrice;
-    },
-    //结账
-    getbill() {
-      console.log(this.sum);
-      for (let i in this.orderData) {
-        for (let j in this.orderData[i].cartlist) {
-          if (this.orderData[i].cartlist[j].select_goods == 1) {
-            console.log(this.orderData[i].cartlist[j].shopId);
-            console.log(this.orderData[i].cartlist[j].id);
-          }
-        }
-      }
+      this.allPrice = count;
     }
   }
 };
 </script>
 
-<style scoped>
+
+<style lang="less" scoped>
 .box {
   position: relative;
   width: 100%;
@@ -321,6 +304,7 @@ export default {
 img {
   width: 100%;
   height: 100%;
+  object-fit: cover;
 }
 
 .line div:nth-child(2) {
