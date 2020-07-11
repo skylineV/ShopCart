@@ -1,1 +1,2 @@
-# 基于vue+vant实现移动端购物车功能
+# shopCart
+基于vue+vant实现移动端购物车功能
